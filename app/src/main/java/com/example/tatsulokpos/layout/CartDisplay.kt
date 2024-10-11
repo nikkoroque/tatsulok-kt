@@ -121,5 +121,4 @@ fun CartCard(index: Int, cartItems: List<CartItemModel>) {
 }
 
 fun RemoveCartItem(cartItem: CartItemModel) {
-    // TODO
 }
