@@ -77,7 +77,7 @@ fun ProductCard(index: Int, products: List<ProductModel>, onAddToCart: (ProductM
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = product.sku,
+                text = product.name,
                 color = Color.Black,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
