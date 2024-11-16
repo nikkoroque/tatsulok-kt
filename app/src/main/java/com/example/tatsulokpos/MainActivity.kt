@@ -8,7 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.tatsulokpos.layout.POSLayout
+import com.example.tatsulokpos.components.navigation.NavigationComponent
 import com.example.tatsulokpos.ui.theme.TatsulokPOSTheme
 
 class MainActivity : ComponentActivity() {
@@ -18,19 +18,18 @@ class MainActivity : ComponentActivity() {
         setContent {
             TatsulokPOSTheme {
                 Surface(color = MaterialTheme.colorScheme.background) {
-                    POSLayout()
-
+                    // Use NavigationComponent as the entry point
+                    NavigationComponent()
                 }
             }
         }
     }
 
-
     @Preview(showBackground = true, widthDp = 1024, heightDp = 768)
     @Composable
     fun DefaultPreview() {
         TatsulokPOSTheme {
-            POSLayout()
+            NavigationComponent()
         }
     }
 }

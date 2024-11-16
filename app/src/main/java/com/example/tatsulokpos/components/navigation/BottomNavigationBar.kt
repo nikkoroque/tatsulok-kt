@@ -2,8 +2,8 @@ package com.example.tatsulokpos.components.navigation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material.icons.rounded.Notifications
@@ -13,10 +13,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.tatsulokpos.components.navigation.data.BottomNavigation
+import com.example.tatsulokpos.layout.POSLayout
+import com.example.tatsulokpos.transactions.data.TransactionDao
+import com.example.tatsulokpos.transactions.ui.TransactionsList
 
 
 val navItems = listOf(
@@ -42,17 +49,40 @@ val navItems = listOf(
     )
 )
 
-@Preview(showBackground = true, widthDp = 1024, heightDp = 768)
 @Composable
-fun BottomNavigationBar() {
+fun NavigationComponent() {
+    val navController = rememberNavController()
+
+    Scaffold (
+        bottomBar = { BottomNavigationBar(navController) } // Place BottomNavigationBar in the Scaffold
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = "checkout",
+            modifier = Modifier.padding(innerPadding) // Apply innerPadding to NavHost
+        ) {
+            composable("checkout") { POSLayout(navController) }
+            composable("transactions") {
+                TransactionsList(
+                    transactionItems = TransactionDao.getTransactions(),
+                    navController = navController
+                )
+            }
+        }
+    }
+}
+
+
+@Composable
+fun BottomNavigationBar(navController: NavHostController) {
     NavigationBar {
         Row(
             modifier = Modifier.background(MaterialTheme.colorScheme.inverseOnSurface)
         ) {
             navItems.forEach { item ->
                 NavigationBarItem(
-                    selected = item.route == "checkout",
-                    onClick = {},
+                    selected = item.route == navController.currentDestination?.route,
+                    onClick = { navController.navigate(item.route) },
                     icon = {
                         Icon(
                             imageVector = item.icon,
