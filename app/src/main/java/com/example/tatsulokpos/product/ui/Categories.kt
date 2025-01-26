@@ -11,10 +11,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,54 +29,67 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.tatsulokpos.product.data.CategoryDao.getCategories
+import com.example.tatsulokpos.product.model.CategoryModel
+import com.example.tatsulokpos.product.viewmodel.CategoryViewModel
 
 @Composable
-fun Categories(onCategorySelected: (Int) -> Unit) {
+fun Categories(
+    onCategorySelected: (Int) -> Unit,
+    viewModel: CategoryViewModel = viewModel() // Inject CategoryViewModel
+) {
+    // Observe categories from the ViewModel's state
+    val categories by viewModel.categories.collectAsState()
+
+    // Fetch categories when this composable is loaded
+    LaunchedEffect(Unit) {
+        viewModel.fetchCategories()
+    }
+
+    // Category header
     Text(
         text = "Categories",
         style = MaterialTheme.typography.headlineSmall,
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
     )
+
+    // Category row
     LazyRow {
-        items(getCategories().size, key = { index -> getCategories()[index].id }) { index ->
-            CategoryCard(index, onCategorySelected)
+        items(categories, key = { it.category_id }) { category ->
+            CategoryCard(category, onCategorySelected)
         }
     }
 }
 
 @Composable
-fun CategoryCard(index: Int, onCategorySelected: (Int) -> Unit) {
-    val card = getCategories()[index]
-    val isLastItem = index == getCategories().size - 1
-    val paddingEnd = if (isLastItem) 16.dp else 0.dp
-
-    Box(modifier = Modifier.padding(start = 10.dp, end = paddingEnd)) {
+fun CategoryCard(
+    category: CategoryModel,
+    onCategorySelected: (Int) -> Unit
+) {
+    Box(modifier = Modifier.padding(start = 10.dp, end = 10.dp)) {
         Column(
             modifier = Modifier
                 .clip(RoundedCornerShape(10.dp))
-                .background(Color(0xFFFEFEFA))
+                .background(Color.Black)
                 .width(150.dp)
-                .height(120.dp)
-                .clickable { onCategorySelected(card.id) }
+                .height(70.dp)
+                .clickable { onCategorySelected(category.category_id) }
                 .padding(vertical = 5.dp, horizontal = 5.dp),
-            verticalArrangement = Arrangement.SpaceBetween,
+            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            AsyncImage(
-                model = card.featuredImage,
-                contentDescription = card.name,
-                modifier = Modifier
-                    .width(150.dp)
-                    .height(80.dp)
-                    .clip(RoundedCornerShape(5.dp))
-            )
-            Spacer(modifier = Modifier.height(10.dp))
+//            AsyncImage(
+//                model = category.description, // Replace with appropriate image URL if available
+//                contentDescription = category.name,
+//                modifier = Modifier
+//                    .width(150.dp)
+//                    .height(80.dp)
+//                    .clip(RoundedCornerShape(5.dp))
+//            )
+//            Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text = card.name,
-                color = Color.Black,
-                fontSize = 12.sp,
+                text = category.name,
+                color = Color.White,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
             )

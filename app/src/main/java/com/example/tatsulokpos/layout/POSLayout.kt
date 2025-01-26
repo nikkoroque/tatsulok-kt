@@ -3,43 +3,35 @@ package com.example.tatsulokpos.layout
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.tatsulokpos.layout.viewmodel.CartViewModel
 import com.example.tatsulokpos.product.model.CartItemModel
 
-
 @Composable
-fun POSLayout(navController: NavHostController) {
-    var cartItems by remember { mutableStateOf(listOf<CartItemModel>()) }
-
+fun POSLayout(
+    navController: NavHostController,
+    cartViewModel: CartViewModel = viewModel() // Inject CartViewModel
+) {
     Row(
         modifier = Modifier
             .fillMaxSize()
     ) {
+        // Main screen for products
         MainScreen(
             onAddToCart = { product ->
-                val existingItemIndex = cartItems.indexOfFirst { it.product.id == product.id }
-                if (existingItemIndex >= 0) {
-                    val updatedCartItems = cartItems.toMutableList().apply {
-                        val existingItem = this[existingItemIndex]
-                        this[existingItemIndex] = existingItem.copy(quantity = existingItem.quantity + 1)
-                    }
-                    cartItems = updatedCartItems
-                } else {
-                    cartItems = cartItems + CartItemModel(product, 1)
-                }
+                // Add product to the cart using CartViewModel
+                cartViewModel.addToCart(CartItemModel(product, 1))
             },
             modifier = Modifier.weight(0.7f)
         )
+
+        // Cart display for managing and viewing cart items
         CartDisplay(
-            cartItems = cartItems,
-            onClearCart = { cartItems = listOf() }, // Clear cart items on checkout
-            modifier = Modifier.weight(0.3f)
+            viewModel = cartViewModel, // Pass the CartViewModel to CartDisplay
+            modifier = Modifier.weight(0.3f) // Pass the modifier
         )
     }
-
 }
+

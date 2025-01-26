@@ -6,6 +6,6 @@ import java.util.Locale
 
 @Composable
 fun currencyFormatter(amount: Double): String {
-    val formatter = NumberFormat.getCurrencyInstance(Locale.US);
-    return formatter.format(amount);
+    val formatter = NumberFormat.getCurrencyInstance(Locale("en", "PH")) // Locale for the Philippines
+    return formatter.format(amount)
 }
