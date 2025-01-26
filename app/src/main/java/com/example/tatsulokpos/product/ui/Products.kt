@@ -44,7 +44,7 @@ fun Products(
 
     // Fetch products when this composable is loaded
     LaunchedEffect(Unit) {
-        viewModel.fetchProducts()
+        viewModel.fetchAllProducts()
     }
 
     // Filter products based on selected category

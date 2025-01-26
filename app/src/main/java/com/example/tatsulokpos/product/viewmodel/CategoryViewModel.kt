@@ -19,7 +19,7 @@ class CategoryViewModel : ViewModel() {
     fun fetchCategories() {
         viewModelScope.launch {
             try {
-                val response = RetrofitInstance.categoriesApi.getCategories()
+                val response = RetrofitInstance.categoryApi.getCategories()
 
                 // Log the response to Logcat
                 Log.d(TAG, "Fetched categories: $response")

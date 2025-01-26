@@ -1,6 +1,7 @@
 package com.example.tatsulokpos.transactions.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,79 +27,124 @@ import com.example.tatsulokpos.transactions.model.TransactionModel
 import com.example.tatsulokpos.utils.currencyFormatter
 
 @Composable
-fun TransactionsList(transactionItems: List<TransactionModel>, navController: NavHostController) {
-    Column (
-        modifier = Modifier.padding(16.dp)
+fun TransactionsList(
+    transactionItems: List<TransactionModel>,
+    onVoidClick: (TransactionModel) -> Unit // Callback for void button
+) {
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxWidth()
     ) {
-        Text(text = "Transactions", style = MaterialTheme.typography.headlineLarge)
+        Text(
+            text = "Transactions",
+            style = MaterialTheme.typography.headlineLarge,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
 
-        if(transactionItems.isEmpty()) {
-            Text("No transactions found")
+        if (transactionItems.isEmpty()) {
+            Text("No transactions found", style = MaterialTheme.typography.bodyMedium)
         } else {
             LazyColumn(
-                modifier = Modifier
-                    .weight(1f)  // Restrict the height to available space only
-                    .padding(bottom = 16.dp)  // Add extra padding to stop behind total section
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(transactionItems.size) { index ->
-                    TransactionCard(index, transactionItems)
+                    TransactionCard(
+                        transaction = transactionItems[index],
+                        onVoidClick = onVoidClick
+                    )
                 }
             }
         }
     }
 }
+
 
 
 @Composable
-fun TransactionCard(index: Int, transactionItems: List<TransactionModel>) {
-    val transactionItem = transactionItems[index]
-
-    Box(modifier = Modifier.padding(vertical = 1.dp).padding(start = 10.dp, end = 10.dp)) {
-        Column(modifier = Modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(Color(0xFFFEFEFA))
-            .fillMaxWidth()
-            .height(70.dp)
-            .padding(vertical = 5.dp, horizontal = 5.dp),
-            verticalArrangement = Arrangement.Center
+fun TransactionCard(
+    transaction: TransactionModel,
+    onVoidClick: (TransactionModel) -> Unit // Callback for Void button
+) {
+    Box(
+        modifier = Modifier
+            .padding(vertical = 8.dp, horizontal = 16.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(16.dp)
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = transactionItem.id.toString(),
-                color = Color.LightGray,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Normal,
-                textAlign = TextAlign.Start
-            )
             Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.weight(1f)
-                ) {
+                Column {
                     Text(
-                        text = transactionItem.date,
-                        color = Color.Black,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Normal,
-                        textAlign = TextAlign.Start,
-                        modifier = Modifier.align(Alignment.CenterVertically)
+                        text = "Transaction ID: ${transaction.transaction_id}",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     )
-
+                    Text(
+                        text = "Product ID: ${transaction.product_id}",
+                        style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray)
+                    )
                 }
                 Text(
-                    text = currencyFormatter(transactionItem.total),
-                    color = Color.Black,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.End,
-                    modifier = Modifier.align(Alignment.CenterVertically)
+                    text = currencyFormatter(transaction.amount),
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
                 )
+            }
 
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column {
+                    Text(
+                        text = "Date: ${transaction.transaction_date}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "Type: ${transaction.transaction_type}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "Remarks: ${transaction.remarks}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                Text(
+                    text = "Quantity: ${transaction.quantity}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+
+            // Void Button
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Text(
+                    text = "Void Transaction",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color.Transparent)
+                        .padding(8.dp)
+                        .clickable { onVoidClick(transaction) }
+                )
             }
         }
     }
-
 }
+
