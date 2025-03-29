@@ -23,13 +23,15 @@ import com.example.tatsulokpos.components.header.HeaderSection
 import com.example.tatsulokpos.product.model.CartItemModel
 import com.example.tatsulokpos.utils.currencyFormatter
 import com.example.tatsulokpos.layout.viewmodel.CartViewModel
+import com.example.tatsulokpos.transactions.viewmodel.TransactionViewModel
 
 @Composable
 fun CartDisplay(
-    viewModel: CartViewModel,
-    modifier: Modifier = Modifier // Add back the modifier parameter
+    cartViewModel: CartViewModel,
+    transactionViewModel: TransactionViewModel, // Added TransactionViewModel
+    modifier: Modifier = Modifier
 ) {
-    val cartItems = viewModel.cartItems.collectAsState().value
+    val cartItems = cartViewModel.cartItems.collectAsState().value
     val initialPrice = cartItems.sumOf { it.product.price * it.quantity }
 
     Box(
@@ -50,14 +52,14 @@ fun CartDisplay(
             } else {
                 LazyColumn(
                     modifier = Modifier
-                        .weight(1f)  // Restrict the height to available space only
-                        .padding(bottom = 16.dp)  // Add extra padding to stop behind total section
+                        .weight(1f)
+                        .padding(bottom = 16.dp)
                 ) {
                     items(cartItems.size) { index ->
                         CartCard(
                             cartItem = cartItems[index],
-                            onIncreaseQuantity = { viewModel.increaseQuantity(it) },
-                            onDecreaseQuantity = { viewModel.decreaseQuantity(it) }
+                            onIncreaseQuantity = { cartViewModel.increaseQuantity(it) },
+                            onDecreaseQuantity = { cartViewModel.decreaseQuantity(it) }
                         )
                     }
                 }
@@ -69,13 +71,18 @@ fun CartDisplay(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(16.dp)
-                .background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(8.dp)) // Optional: Add background to make it more visible
+                .background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(8.dp))
         ) {
             CheckOutSection(initialPrice)
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            CheckOutButton(onCheckoutComplete = { viewModel.clearCart() })
+            // Pass TransactionViewModel
+            CheckOutButton(
+                cartViewModel = cartViewModel,  // ✅ Pass cartViewModel
+                transactionViewModel = transactionViewModel,
+                onCheckoutComplete = { cartViewModel.clearCart() }
+            )
         }
     }
 }

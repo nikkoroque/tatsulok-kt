@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tatsulokpos.api.RetrofitInstance
 import com.example.tatsulokpos.transactions.model.TransactionModel
+import com.example.tatsulokpos.transactions.model.TransactionRequest
 import com.example.tatsulokpos.transactions.repository.TransactionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -39,23 +40,24 @@ class TransactionViewModel : ViewModel() {
      * Create a new transaction.
      * @param transaction The transaction to create.
      */
-    fun createTransaction(transaction: TransactionModel) {
+    fun createTransaction(transaction: TransactionRequest) {
         viewModelScope.launch {
             try {
                 val newTransaction = repository.createTransaction(transaction)
                 if (newTransaction != null) {
-                    _transactions.value = _transactions.value + newTransaction // Add the new transaction to the list
+                    println("Transaction successful: $newTransaction")
                     _transactionResult.value = true // Indicate success
                 } else {
+                    println("Transaction failed: Response is null")
                     _transactionResult.value = false // Indicate failure
                 }
             } catch (e: Exception) {
-                e.printStackTrace() // Handle error
+                e.printStackTrace()
+                println("Transaction failed: ${e.message}")
                 _transactionResult.value = false
             }
         }
     }
-
     /**
      * Void a transaction by its ID.
      * @param id The ID of the transaction to void.
