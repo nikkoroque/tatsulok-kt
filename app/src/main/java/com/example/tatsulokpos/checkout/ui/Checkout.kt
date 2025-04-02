@@ -1,5 +1,6 @@
 package com.example.tatsulokpos.checkout.ui
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,9 +35,14 @@ import kotlinx.coroutines.launch
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.height
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import com.example.tatsulokpos.layout.viewmodel.CartViewModel
+import com.example.tatsulokpos.product.model.CartItemModel
+import com.example.tatsulokpos.transactions.model.TransactionRequest
+import com.example.tatsulokpos.transactions.viewmodel.TransactionViewModel
 
 
 @Composable
@@ -54,11 +60,13 @@ fun CheckOutSection(price : Double) {
 }
 
 @Composable
-fun CheckOutButton(onCheckoutComplete: () -> Unit) {
+fun CheckOutButton(
+    transactionViewModel: TransactionViewModel,
+    cartViewModel: CartViewModel,
+    onCheckoutComplete: () -> Unit
+) {
     var showDialog by remember { mutableStateOf(false) }
-    var showCheckOutMessage by remember { mutableStateOf(false) }
-    var isProcessing by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
+    val cartItems = cartViewModel.cartItems.collectAsState().value
 
     Box(Modifier.fillMaxWidth()) {
         Button(
@@ -76,26 +84,14 @@ fun CheckOutButton(onCheckoutComplete: () -> Unit) {
     if (showDialog) {
         PaymentOptionsDialog(
             showDialog = showDialog,
+            cartItems = cartItems,
+            transactionViewModel = transactionViewModel,
             onDismiss = { showDialog = false },
             onConfirm = {
                 showDialog = false
-                isProcessing = true
-                coroutineScope.launch {
-                    delay(2000) // Simulate payment processing delay
-                    isProcessing = false
-                    showCheckOutMessage = true
-                    onCheckoutComplete() // Clear cart items after checkout
-                }
+                onCheckoutComplete() // Clear cart after checkout
             }
         )
-    }
-
-    if (isProcessing) {
-        ProcessingMessage()
-    }
-
-    if (showCheckOutMessage) {
-        CheckOutMessage(onDismiss = { showCheckOutMessage = false })
     }
 }
 
@@ -109,15 +105,20 @@ fun ProcessingMessage() {
     )
 }
 
-
 @Composable
 fun PaymentOptionsDialog(
     showDialog: Boolean,
+    cartItems: List<CartItemModel>,
+    transactionViewModel: TransactionViewModel,
     onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit // Passes the selected payment option to the confirm action
+    onConfirm: () -> Unit
 ) {
     if (showDialog) {
         var selectedOption by remember { mutableStateOf("") }
+        val coroutineScope = rememberCoroutineScope()
+        var isProcessing by remember { mutableStateOf(false) }
+        var showCheckOutMessage by remember { mutableStateOf(false) } // Checkout message state
+
         AlertDialog(
             onDismissRequest = { onDismiss() },
             title = { Text(text = "Choose Payment Option", fontWeight = FontWeight.Bold) },
@@ -145,9 +146,43 @@ fun PaymentOptionsDialog(
                     )
                 }
             },
+
             confirmButton = {
+                val transactionType = when (selectedOption) {
+                    "Creditcard/Non-Creditcard Installment Payments" -> "SALE"
+                    "Credit/Debit Card Payments" -> "SALE"
+                    "eWallet Payments" -> "SALE"
+                    else -> "RETURN" // Default fallback
+                }
                 Button(
-                    onClick = { onConfirm(selectedOption) },
+                    onClick = {
+                        isProcessing = true
+                        coroutineScope.launch {
+                            delay(2000) // Simulate payment processing delay
+
+                            if (cartItems.isNotEmpty()) {
+                                for (item in cartItems) {
+                                    val transaction = TransactionRequest(
+                                        productId = item.product.product_id,
+                                        quantity = item.quantity,
+                                        amount = item.product.price * item.quantity,
+                                        transactionType = transactionType, // Use selected option
+                                        remarks = "Checkout transaction"
+                                    )
+
+                                    println("Creating transaction: $transaction")
+                                    transactionViewModel.createTransaction(transaction)
+
+                                    println("THIS IS BUGGING: $transactionType")
+                                }
+                            } else {
+                                println("Cart is empty. No transactions created.")
+                            }
+
+                            isProcessing = false
+                            showCheckOutMessage = true // Show checkout message
+                        }
+                    },
                     enabled = selectedOption.isNotEmpty()
                 ) {
                     Text("Confirm")
@@ -159,8 +194,17 @@ fun PaymentOptionsDialog(
                 }
             }
         )
+
+        // Show checkout confirmation message after processing
+        if (showCheckOutMessage) {
+            CheckOutMessage {
+                showCheckOutMessage = false
+                onConfirm() // Calls checkout completion after message dismissal
+            }
+        }
     }
 }
+
 
 @Composable
 fun PaymentOptionRow(
@@ -170,6 +214,7 @@ fun PaymentOptionRow(
     onSelect: (String) -> Unit
 ) {
     val isSelected = selectedModeOfPayment == option
+
     Column(
         verticalArrangement = Arrangement.Center,
         modifier = Modifier
@@ -181,7 +226,9 @@ fun PaymentOptionRow(
             )
             .clickable { onSelect(option) } // Make the entire row clickable
             .padding(8.dp)
-    ) {
+
+    )
+    {
         // Load the image for the payment option
         // Display the option text
         Text(option, modifier = Modifier.align(Alignment.Start), fontSize = 18.sp, fontWeight = FontWeight.Bold)
@@ -197,6 +244,7 @@ fun PaymentOptionRow(
         )
 
     }
+
 }
 
 @Composable
@@ -214,7 +262,5 @@ fun CheckOutMessage(onDismiss: () -> Unit) {
         }
     )
 }
-
-
 
 

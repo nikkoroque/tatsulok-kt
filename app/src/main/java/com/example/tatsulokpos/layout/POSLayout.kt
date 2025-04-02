@@ -8,30 +8,30 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.tatsulokpos.layout.viewmodel.CartViewModel
 import com.example.tatsulokpos.product.model.CartItemModel
+import com.example.tatsulokpos.transactions.viewmodel.TransactionViewModel
 
 @Composable
 fun POSLayout(
     navController: NavHostController,
-    cartViewModel: CartViewModel = viewModel() // Inject CartViewModel
+    cartViewModel: CartViewModel = viewModel(), // ✅ Ensure CartViewModel is provided
+    transactionViewModel: TransactionViewModel = viewModel() // ✅ Ensure TransactionViewModel is provided
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
-        // Main screen for products
+        // Main product screen
         MainScreen(
             onAddToCart = { product ->
-                // Add product to the cart using CartViewModel
                 cartViewModel.addToCart(CartItemModel(product, 1))
             },
             modifier = Modifier.weight(0.7f)
         )
 
-        // Cart display for managing and viewing cart items
+        // ✅ Ensure CartDisplay receives both view models
         CartDisplay(
-            viewModel = cartViewModel, // Pass the CartViewModel to CartDisplay
-            modifier = Modifier.weight(0.3f) // Pass the modifier
+            cartViewModel = cartViewModel,
+            transactionViewModel = transactionViewModel,
+            modifier = Modifier.weight(0.3f)
         )
     }
 }
-

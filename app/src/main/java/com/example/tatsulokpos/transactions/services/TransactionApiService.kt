@@ -1,6 +1,7 @@
 package com.example.tatsulokpos.transactions.services
 
 import com.example.tatsulokpos.transactions.model.TransactionModel
+import com.example.tatsulokpos.transactions.model.TransactionRequest
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -13,7 +14,7 @@ interface TransactionApiService {
     suspend fun getTransactions(): List<TransactionModel>
 
     @POST("/api/transactions")
-    suspend fun createTransaction(@Body transaction: TransactionModel): Response<TransactionModel>
+    suspend fun createTransaction(@Body transaction: TransactionRequest): Response<TransactionModel>
 
     @PUT("/api/transactions/{id}")
     suspend fun updateTransaction(@Path("id") id:Int, @Body transaction: TransactionModel): Response<TransactionModel>

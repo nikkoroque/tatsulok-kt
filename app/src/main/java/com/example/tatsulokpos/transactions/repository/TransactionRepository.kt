@@ -1,6 +1,7 @@
 package com.example.tatsulokpos.transactions.repository
 
 import com.example.tatsulokpos.transactions.model.TransactionModel
+import com.example.tatsulokpos.transactions.model.TransactionRequest
 import com.example.tatsulokpos.transactions.services.TransactionApiService
 
 
@@ -9,7 +10,7 @@ class TransactionRepository(private val api: TransactionApiService) {
         return api.getTransactions()
     }
 
-    suspend fun createTransaction(transaction: TransactionModel): TransactionModel? {
+    suspend fun createTransaction(transaction: TransactionRequest): TransactionModel? {
         val response = api.createTransaction(transaction)
 
         return if (response.isSuccessful) response.body() else null
