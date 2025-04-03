@@ -77,16 +77,23 @@ fun ProductCard(
     product: ProductModel,
     onAddToCart: (ProductModel) -> Unit
 ) {
+    // Check if product quantity is 0
+    val isProductDisabled = product.quantity == 0
+
     Box(modifier = Modifier
         .padding(vertical = 10.dp)
         .padding(start = 10.dp, end = 10.dp)) {
         Column(
             modifier = Modifier
                 .clip(RoundedCornerShape(10.dp))
-                .background(Color(0xFFFEFEFA))
+                .background(if (isProductDisabled) Color.Gray else Color(0xFFFEFEFA)) // Change color for out-of-stock
                 .width(250.dp)
                 .height(120.dp)
-                .clickable { onAddToCart(product) }
+                .clickable(enabled = !isProductDisabled) {
+                    if (!isProductDisabled) {
+                        onAddToCart(product)
+                    }
+                }
                 .padding(vertical = 5.dp, horizontal = 5.dp),
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -103,11 +110,21 @@ fun ProductCard(
 
             Text(
                 text = product.name,
-                color = Color.Black,
+                color = if (isProductDisabled) Color.DarkGray else Color.Black, // Dim the text for out-of-stock
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
             )
+
+            if (isProductDisabled) {
+                Text(
+                    text = "Out of Stock",
+                    color = Color.Red,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                )
+            }
         }
     }
 }
